@@ -17,13 +17,13 @@ async function nashbotAPI(prompt) {
 }
 
 module.exports = {
-    name: "nashbot",
-    description: "nakaw pa gago",
+    name: "jaybot",
+    description: "nakaw pa",
     nashPrefix: true,
     version: "1.0.0",
     role: 0,
     cooldowns: 5,
-    aliases: ["nashbot"],
+    aliases: ["jayai"],
     async execute(api, event, args) {
         const { threadID, messageID, senderID } = event;
         let prompt = args.join(" ");
@@ -41,7 +41,7 @@ module.exports = {
                 try {
                     const response = await nashbotAPI(prompt);
                     api.editMessage(
-                        "[ ✦Nashbot✦]\n\n" +
+                        "[ ✦JayBot✦]\n\n" +
                         `${response}`,
                         info.messageID
                     );

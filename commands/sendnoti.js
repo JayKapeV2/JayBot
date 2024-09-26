@@ -26,7 +26,7 @@ module.exports = {
       if (thread.isGroup && thread.threadID !== event.threadID) {
         try {
           await api.sendMessage(
-            `➜ 𝗡𝗢𝗧𝗜𝗙𝗜𝗖𝗔𝗧𝗜𝗢𝗡 𝗙𝗥𝗢𝗠 𝗔𝗗𝗠𝗜𝗡\n\n➜ ${customMessage}\n\nAutoBotDev: https://www.facebook.com/profile.php?id=100088690249020`,
+            `➜ 𝗡𝗢𝗧𝗜𝗙𝗜𝗖𝗔𝗧𝗜𝗢𝗡 𝗙𝗥𝗢𝗠 𝗔𝗗𝗠𝗜𝗡\n\n➜ ${customMessage}\n\nBot Owner : facebook.com/61552691907450`,
             thread.threadID
           );
           sentCount++;

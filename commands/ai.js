@@ -1,35 +1,61 @@
 const axios = require('axios');
 
-module.exports = {
+module.exports.config = {
     name: 'ai',
-    description: 'Interact with GPT-3.5 Turbo',
+    version: '1.0.0',
+    role: 0,
+    hasPrefix: true,
+    aliases: ['ai'],
+    description: 'Interact with the Gemin',
+    usage: 'gemini [custom prompt] (attach image or not)',
+    credits: 'churchill',
     cooldown: 3,
-    nashPrefix: false,
-    execute: async (api, event, args) => {
-        const input = args.join(' ');
-        const uid = event.senderID;
+};
 
-        if (!input) {
-            return api.sendMessage('Please enter a prompt.', event.threadID, event.messageID);
-        }
+module.exports.run = async function({ api, event, args }) {
+    const attachment = event.messageReply?.attachments[0] || event.attachments[0];
+    const customPrompt = args.join(' ');
 
-        api.sendMessage('Processing your request...', event.threadID, event.messageID);
+    if (!customPrompt && !attachment) {
+        return api.sendMessage('Please provide a prompt or attach a photo for the gemini to analyze.', event.threadID, event.messageID);
+    }
 
-        try {
-            const response = await axios.get(`${global.NashBot.END}new/gpt-3_5-turbo?prompt=${encodeURIComponent(input)}`);
-            const result = response.data.result.reply;
+    let apiUrl = 'https://deku-rest-api-3jvu.onrender.com/gemini?';
 
-            if (!result) {
-                throw new Error('No valid response received from the API.');
-            }
+    if (attachment && attachment.type === 'photo') {
+        const prompt = customPrompt || 'answer this photo';
+        const imageUrl = attachment.url;
+        apiUrl += `prompt=${encodeURIComponent(prompt)}&url=${encodeURIComponent(imageUrl)}`;
+    } else {
+        apiUrl += `prompt=${encodeURIComponent(customPrompt)}`;
+    }
 
-            api.sendMessage(
-                `🤖 AI Response\n━━━━━━━━━━━━━━━━━━━\n${result}`,
-                event.threadID,
-                event.messageID
-            );
-        } catch (error) {
-            api.sendMessage(`An error occurred: ${error.message}`, event.threadID, event.messageID);
-        }
-    },
+    const initialMessage = await new Promise((resolve, reject) => {
+        api.sendMessage({
+            body: '🔍 Processing your request...',
+            mentions: [{ tag: event.senderID, id: event.senderID }],
+        }, event.threadID, (err, info) => {
+            if (err) return reject(err);
+            resolve(info);
+        }, event.messageID);
+    });
+
+    try {
+        const response = await axios.get(apiUrl);
+        const aiResponse = response.data.gemini; // Accessing the "gemini" key directly
+
+        const formattedResponse = `
+✨ 𝙶𝚎𝚖𝚒𝚗𝚒 𝚁𝚎𝚜𝚙𝚘𝚗𝚜𝚎
+━━━━━━━━━━━━━━━━━━
+${aiResponse.trim()}
+━━━━━━━━━━━━━━━━━━
+-JayBot
+        `;
+
+        await api.editMessage(formattedResponse.trim(), initialMessage.messageID);
+
+    } catch (error) {
+        console.error('Error:', error);
+        await api.editMessage('An error occurred, please try use "ai2" command.', initialMessage.messageID);
+    }
 };
